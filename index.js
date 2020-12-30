@@ -159,13 +159,18 @@ function inject (bot) {
 		if (!headLockedUntilGround) {
 			await bot.lookAt(target.offset(.5, 1.625, .5), true)
 		}
-		if (!isPlayerOnBlock(bot.entity.position, target, bot.entity.onGround) && !(allowSkippingPath && isPointOnPath(bot.entity.position))) {
+		if (!isPlayerOnBlock(bot.entity.position, target, bot.entity.onGround, !centered) && !(allowSkippingPath && isPointOnPath(bot.entity.position))) {
 			let blockInside = bot.world.getBlock(bot.entity.position.offset(0, 0, 0).floored())
-			let blockInside2 = bot.world.getBlock(bot.entity.position.offset(0, 0, 0).floored())
-			if (blockInside && (blockInside.name === 'water' || blockInside2.name === 'water') && target.y >= bot.entity.position.y - .5) {
+			let blockInside2 = bot.world.getBlock(bot.entity.position.offset(0, 1, 0).floored())
+			if (
+				(blockInside && (blockInside.name === 'water' || blockInside2.name === 'water') && target.y >= bot.entity.position.y - .5)
+				|| (blockInside && blockInside2.name === 'ladder' && target.y >= bot.entity.position.y)
+			) {
 				// in water
-				bot.setControlState('jump', true)
 				bot.setControlState('sprint', false)
+				bot.setControlState('forward', false)
+				bot.setControlState('jump', true)
+				console.log('going up')
 			} else if (bot.entity.onGround && shouldAutoJump()) {
 				bot.setControlState('jump', true)
 				// autojump!
