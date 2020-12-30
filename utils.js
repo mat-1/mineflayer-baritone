@@ -30,7 +30,9 @@ function blockIsNotEmpty(pos) {
 	return block !== null && block.boundingBox !== 'empty'
 }
 
-function canReach(startPosition, endPosition, maxDistance=3) {
+function canReach(startPosition, endPosition, maxDistance=4) {
+	return endPosition.distanceTo(startPosition) < maxDistance
+
 	let stepSize = endPosition.minus(startPosition)
 	let distance = Math.sqrt(stepSize.x * stepSize.x + stepSize.y * stepSize.y + stepSize.z * stepSize.z)
 	if (distance > maxDistance) return false
@@ -59,4 +61,4 @@ function canReach(startPosition, endPosition, maxDistance=3) {
 // 	return isPlayerOnBlock(node, position, true)
 // }
 
-module.exports = { isPlayerOnBlock }
+module.exports = { isPlayerOnBlock, canReach }

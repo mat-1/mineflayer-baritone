@@ -257,6 +257,7 @@ function inject (bot) {
 	}
 
 	function tryStraightPath(goal) {
+		// try to just sprint jump toward the goal, returns a boolean if its possible
 		const isStateGood = (state) => {
 			if (!state) return false
 			if (state.airTicks > 15) return false // if youre falling for more than 15 ticks, then its probably too dangerous
@@ -276,6 +277,7 @@ function inject (bot) {
 	}
 
 	async function complexPath(pathGoal, options={}) {
+		// uses A* to find a path and combines straight paths to get to the goal
 		if(!(pathGoal instanceof goals.Goal))
 			pathGoal = new goals.GoalBlock(pathGoal.x, pathGoal.y, pathGoal.z)
 
@@ -292,12 +294,13 @@ function inject (bot) {
 		const start = bot.entity.position.floored()
 
 		if (bot.pathfinder.straightLine && pathGoal.pos && tryStraightPath(pathGoal)) {
+			// just run straight toward the goal, useful when chasing people
 			console.log('straight pathing :)', pathGoal.pos)
-			bot.lookAt(pathGoal.pos.offset(-.5, 0, -.5), true)
+			bot.lookAt(pathGoal.pos, true)
 			calculating = false
 			goingToPathTarget = pathGoal.pos.clone()
 			complexPathPoints = [start, pathGoal.pos]
-			await straightPath({target: pathGoal.pos, skip: false, centered: options.centered})
+			await straightPath({target: pathGoal.pos.offset(-.5, 0, -.5), skip: false, centered: options.centered})
 		} else {
 			const timeout = bot.pathfinder.timeout
 
