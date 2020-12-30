@@ -17,9 +17,12 @@ class MoveDownLadder extends Move {
 		let position = this.down(0)
 		let landingNode = this.down(1)
 
-		if (this.isStandable(position) && this.isLadder(landingNode))
-			neighbors.push(this.makeMovement(landingNode, 2))
+		if ((this.isAir(position) || this.isLadder(position)) && this.isLadder(landingNode))
+			neighbors.push(this.makeMovement(landingNode, 4))
 	}
 }
 
-registerMoves([ MoveUpLadder ])
+registerMoves([
+	MoveUpLadder,
+	// MoveDownLadder disabled because its glitchy
+])
