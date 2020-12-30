@@ -145,6 +145,7 @@ class MoveDiagonalParkour extends Move {
 	addNeighbors(neighbors) {
 		let landingNode = this.right(2).forward(2)
 
+		let isDiagonalWalkable1 = this.isWalkable(this.right(1).forward(1).up(1))
 		let isRightWalkable1 = this.isWalkable(this.right(1).up(1))
 		let isForwardWalkable1 = this.isWalkable(this.forward(1).up(1))
 		let isRightWalkable2 = this.isWalkable(this.right(2).forward(1).up(1))
@@ -152,6 +153,7 @@ class MoveDiagonalParkour extends Move {
 		if (
 			   (!isRightWalkable1 && !isForwardWalkable1)
 			|| (!isRightWalkable2 && !isForwardWalkable2)
+			|| (!isDiagonalWalkable1)
 		) return []
 
 		if (this.isStandable(landingNode)) {
@@ -217,8 +219,12 @@ class MoveSemiDiagonalParkour extends Move {
 
 		let isRightWalkable1 = this.isJumpable(this.right(1).up(1))
 		let isForwardWalkable1 = this.isJumpable(this.forward(1).up(1))
+		let isDiagonalWalkable1 = this.isJumpable(this.forward(1).right(1).up(1))
+		let isDiagonalWalkable2 = this.isJumpable(this.forward(2).up(1))
 		if (
 			   (!isRightWalkable1 && !isForwardWalkable1)
+			|| !(isDiagonalWalkable1 || isDiagonalWalkable2)
+			|| !(isForwardWalkable1 || isDiagonalWalkable1)
 		) return []
 
 		if (this.isStandable(landingNode)) {
