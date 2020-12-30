@@ -155,6 +155,7 @@ function inject (bot) {
 		bot.setControlState('forward', true)
 		const target = straightPathOptions.target
 		const allowSkippingPath = straightPathOptions.skip
+		const centered = straightPathOptions.centered
 		if (!headLockedUntilGround) {
 			await bot.lookAt(target.offset(.5, 1.625, .5), true)
 		}
@@ -203,8 +204,8 @@ function inject (bot) {
 		return false
 	}
 
-	function straightPath({ target, skip }) {
-		straightPathOptions = { target, skip: skip ?? true }
+	function straightPath({ target, skip, centered }) {
+		straightPathOptions = { target, skip: skip ?? true, centered: centered ?? false }
 		return new Promise((resolve, reject) => {
 			if (straightPathOptions)
 				straightPathOptions.resolve = resolve
@@ -339,10 +340,10 @@ function inject (bot) {
 					console.log('timeout, continuing', pathGoal.pos)
 				return await complexPath(pathGoal, options)
 			} else {
-				if (options.correctEnd) {
+				if (options.centered) {
 					if (bot.pathfinder.debug)
 						console.log('pathGoal.pos', pathGoal.pos)
-					await straightPath({target: pathGoal.pos})
+					await straightPath({target: pathGoal.pos}, false, true)
 				}
 			}
 		}
@@ -351,7 +352,7 @@ function inject (bot) {
 	}
 
 
-	bot.pathfinder.goto = async (position, options={correctEnd: true}) => {
+	bot.pathfinder.goto = async (position, options={}) => {
 		bot.clearControlStates()
 		await complexPath(position, options)
 	}

@@ -1,6 +1,6 @@
 const { RaycastIterator } = require('mineflayer/lib/iterators')
 
-function isPlayerOnBlock(playerPosition, blockPosition, onGround=false) {
+function isPlayerOnBlock(playerPosition, blockPosition, onGround=false, overhang=true) {
 	// returns true if you can stand on the block
 	
 	if (!blockPosition) return false // theres no target position lmao
@@ -9,6 +9,8 @@ function isPlayerOnBlock(playerPosition, blockPosition, onGround=false) {
 	const xDistance = Math.abs(playerPosition.x - blockPosition.x)
 	const zDistance = Math.abs(playerPosition.z - blockPosition.z)
 	const yDistance = Math.abs(playerPosition.y - blockPosition.y)
+	if (!overhang)
+		return xDistance < .3 && zDistance < .3 && yDistance < 1
 	const onBlock = (xDistance < .7 && zDistance < .7 && yDistance < 1) || (onGround && xDistance < .8 && zDistance < .8 && yDistance < 0.001)
 	return onBlock
 }
