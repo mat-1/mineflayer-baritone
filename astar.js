@@ -34,11 +34,12 @@ function AStar({ start, goal, neighbor, timeout, bot }) {
 			}
 
 			if (performance.now() - startTime > timeout) {
-				console.log('timeout iterationCount', iterationCount)
+				const path = reconstructPath(bestNode)
+				console.log('timeout iterationCount', iterationCount, path)
 				return resolve({
 					status: 'timeout',
 					cost: bestNode.g,
-					path: reconstructPath(bestNode)
+					path
 				})
 			}
 

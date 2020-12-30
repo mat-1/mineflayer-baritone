@@ -140,7 +140,8 @@ function inject (bot) {
 		// if it's moving slowly and its touching a block, it should probably jump
 		const { x: velX, y: velY, z: velZ } = bot.entity.velocity
 		return (
-			bot.entity.isCollidedHorizontally
+			bot.onGround
+			&& bot.entity.isCollidedHorizontally
 			&& Math.abs(velX) < 0.01
 			&& Math.abs(velZ) < 0.01
 			&& (Math.abs(velY) < .1)
@@ -159,7 +160,7 @@ function inject (bot) {
 		if (!headLockedUntilGround) {
 			await bot.lookAt(target.offset(.5, 1.625, .5), true)
 		}
-		if (!isPlayerOnBlock(bot.entity.position, target, bot.entity.onGround, !centered) && !(allowSkippingPath && isPointOnPath(bot.entity.position))) {
+		if (!isPlayerOnBlock(bot.entity.position, target, bot.entity.onGround, centered) && !(allowSkippingPath && isPointOnPath(bot.entity.position))) {
 			let blockInside = bot.world.getBlock(bot.entity.position.offset(0, 0, 0).floored())
 			let blockInside2 = bot.world.getBlock(bot.entity.position.offset(0, 1, 0).floored())
 			if (
@@ -170,7 +171,6 @@ function inject (bot) {
 				bot.setControlState('sprint', false)
 				bot.setControlState('forward', false)
 				bot.setControlState('jump', true)
-				console.log('going up')
 			} else if (bot.entity.onGround && shouldAutoJump()) {
 				bot.setControlState('jump', true)
 				// autojump!
@@ -292,11 +292,12 @@ function inject (bot) {
 		const start = bot.entity.position.floored()
 
 		if (bot.pathfinder.straightLine && pathGoal.pos && tryStraightPath(pathGoal)) {
-			bot.lookAt(pathGoal.pos, true)
+			console.log('straight pathing :)', pathGoal.pos)
+			bot.lookAt(pathGoal.pos.offset(-.5, 0, -.5), true)
 			calculating = false
 			goingToPathTarget = pathGoal.pos.clone()
 			complexPathPoints = [start, pathGoal.pos]
-			await straightPath({target: pathGoal.pos, skip: false})
+			await straightPath({target: pathGoal.pos, skip: false, centered: options.centered})
 		} else {
 			const timeout = bot.pathfinder.timeout
 
@@ -322,8 +323,12 @@ function inject (bot) {
 			// }
 			// console.log(summedTimes/100, 'average')
 			// return
-			if (bot.pathfinder.debug)
-				console.log(result)
+			if (bot.pathfinder.debug) {
+				console.log('RESULT:', result)
+				if (result.status === 'noPath') {
+					console.log('no path from', new Vec3(pathGoal.x, pathGoal.y, pathGoal.z), 'to', result.path[result.path.length - 1])
+				}
+			}
 			if (currentCalculatedPathNumber > pathNumber) return
 			else currentCalculatedPathNumber = pathNumber
 			calculating = false
@@ -348,7 +353,7 @@ function inject (bot) {
 				if (options.centered) {
 					if (bot.pathfinder.debug)
 						console.log('pathGoal.pos', pathGoal.pos)
-					await straightPath({target: pathGoal.pos}, false, true)
+					await straightPath({target: pathGoal.pos, skip: false, centered: true})
 				}
 			}
 		}

@@ -43,7 +43,7 @@ class MoveForwardDown extends Move {
 		}
 
 		if (this.isStandable(landingNode) && this.isWalkable(forwardNode))
-			neighbors.push(this.makeMovement(landingNode, 2.5))
+			neighbors.push(this.makeMovement(landingNode, 1.5))
 	}
 }
 
