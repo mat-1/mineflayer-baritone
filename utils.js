@@ -11,7 +11,7 @@ function isPlayerOnBlock(playerPosition, blockPosition, onGround=false, overhang
 	const yDistance = Math.abs(playerPosition.y - blockPosition.y)
 	let onBlock
 	if (!overhang)
-		onBlock = xDistance < .5 && zDistance < .5 && yDistance < 1
+		onBlock = xDistance < .3 && zDistance < .3 && yDistance < 1
 	else
 		onBlock = (xDistance < .7 && zDistance < .7 && yDistance < 1) || (onGround && xDistance < .8 && zDistance < .8 && yDistance < 0.001)
 	return onBlock

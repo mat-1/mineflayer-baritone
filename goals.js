@@ -63,7 +63,7 @@ class GoalReach extends Goal {
 	}
 	
 	isEnd(node) {
-		return canReach(node, this.pos, true)
+		return canReach(node, this.pos.offset(0, 1.625, 0), 3)
 	}
 
 	equals(node) {
@@ -73,21 +73,8 @@ class GoalReach extends Goal {
 
 class GoalAny extends Goal {
 	constructor(goals) {
+		super()
 		this.goals = goals
-	}
-
-	get pos() {
-		// returns the position of the goal with the best heuristic
-		let lowestHeuristic = Number.MAX_VALUE
-		let bestPos = null
-		for (const goal of this.goals) {
-			const goalHeuristic = goal.heuristic(node)
-			if (goalHeuristic < lowestHeuristic) {
-				lowestHeuristic = goalHeuristic
-				bestPos = goal.pos
-			}
-		}
-		return bestPos
 	}
 
 	heuristic(node) {

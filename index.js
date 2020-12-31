@@ -367,7 +367,10 @@ function inject (bot) {
 
 	bot.pathfinder.goto = async (position, options={}) => {
 		bot.clearControlStates()
-		await complexPath(position, options)
+		if (options.straight)
+			await straightPath({ target: position, skip: false, centered: options.centered })
+		else
+			await complexPath(position, options)
 	}
 
 	bot.pathfinder.follow = async (entity, options={}) => {
