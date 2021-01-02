@@ -13,7 +13,7 @@ function inject (bot) {
 	bot.pathfinder.timeout = 1000
 	bot.pathfinder.straightLine = true
 	bot.pathfinder.complexPathOptions = {}
-	bot.pathfinder.debug = true
+	bot.pathfinder.debug = false
 
 
 	let targetEntity = null
