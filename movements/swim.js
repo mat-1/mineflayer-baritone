@@ -4,7 +4,7 @@ class MoveForwardSwim extends Move {
 	addNeighbors(neighbors) {
 		let landingNode = this.forward(1)
 		if (this.isWater(landingNode))
-			neighbors.push(this.makeMovement(landingNode, 2.02))
+			neighbors.push(this.makeMovement(landingNode, 5))
 	}
 }
 
@@ -13,8 +13,23 @@ class MoveForwardUpSwim extends Move {
 	addNeighbors(neighbors) {
 		let upNode = this.up(1)
 		let landingNode = this.forward(1).up(1)
-		if (this.isWalkable(upNode) && this.isStandable(landingNode))
-			neighbors.push(this.makeMovement(landingNode, 2.01))
+		if (
+			   this.isWater(this.origin)
+			&& this.isWalkable(upNode)
+			&& this.isStandable(landingNode)
+		)
+			neighbors.push(this.makeMovement(landingNode, 5))
+	}
+}
+
+class MoveForwardDownSwim extends Move {
+	addNeighbors(neighbors) {
+		let landingNode = this.forward(1).down(1)
+		if (
+			   this.isStandable(this.origin)
+			&& this.isWater(landingNode)
+		)
+			neighbors.push(this.makeMovement(landingNode, 10))
 	}
 }
 
@@ -28,7 +43,7 @@ class MoveDiagonalSwim extends Move {
 		if (!isRightWalkable && !isForwardWalkable) return []
 
 		if (this.isWater(landingNode))
-			neighbors.push(this.makeMovement(landingNode, 2.82))
+			neighbors.push(this.makeMovement(landingNode, 5 * Math.SQRT2))
 	}
 }
 
@@ -38,7 +53,7 @@ class MoveUpSwim extends Move {
 		let landingNode = this.up(1)
 
 		if (this.isWater(position) && this.isWater(landingNode))
-			neighbors.push(this.makeMovement(landingNode, 1.501))
+			neighbors.push(this.makeMovement(landingNode, 4))
 	}
 }
 
@@ -48,8 +63,15 @@ class MoveDownSwim extends Move {
 		let landingNode = this.down(1)
 
 		if (this.isWater(landingNode))
-			neighbors.push(this.makeMovement(landingNode, 1.502))
+			neighbors.push(this.makeMovement(landingNode, 10))
 	}
 }
 
-registerMoves([ MoveForwardSwim, MoveDiagonalSwim, MoveUpSwim, MoveDownSwim, MoveForwardUpSwim ])
+registerMoves([
+	MoveForwardSwim,
+	MoveDiagonalSwim,
+	MoveUpSwim,
+	MoveDownSwim,
+	MoveForwardUpSwim,
+	MoveForwardDownSwim
+])

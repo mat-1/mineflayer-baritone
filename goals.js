@@ -26,7 +26,7 @@ class GoalXYZ extends Goal {
 	}
 	
 	heuristic(node) {
-		return node.distanceTo(this.pos)
+		return node.offset(.5, 0, .5).distanceTo(this.pos)
 	}
 	
 	isEnd(node) {
@@ -42,9 +42,9 @@ class GoalBlock extends GoalXYZ {
 	constructor(x, y, z) {
 		super()
 		if (x && !y && !z)
-			this.pos = x.offset(.5, 0, .5)
+			this.pos = x.floored().offset(.5, 0, .5)
 		else
-			this.pos = new Vec3(x + .5, y, z + .5)
+			this.pos = new Vec3(Math.floor(x) + .5, y, Math.floor(z) + .5)
 	}
 }
 

@@ -28,7 +28,11 @@ class MoveForwardUp extends Move {
 		let upNode = this.up(1)
 		let landingNode = this.up(1).forward(1)
 
-		if (this.isWalkable(upNode) && this.isStandable(landingNode))
+		if (
+			   this.isWalkable(upNode)
+			&& this.isStandable(landingNode)
+			&& this.isStandable(this.origin)
+		)
 			neighbors.push(this.makeMovement(landingNode, 2.5))
 	}
 }
@@ -36,7 +40,7 @@ class MoveForwardUp extends Move {
 class MoveForwardDown extends Move {
 	addNeighbors(neighbors) {
 		let forwardNode = this.forward(1)
-		let landingNode = forwardNode
+		let landingNode = forwardNode.up(1)
 		for (let i = 0; i < 3; i++) {
 			landingNode = landingNode.down(1)
 			if (this.isStandable(landingNode)) break
@@ -56,7 +60,10 @@ class MoveDiagonalUp extends Move {
 		let isForwardWalkable = this.isJumpable(this.forward(1).up(1))
 		if (!isRightWalkable && !isForwardWalkable) return []
 
-		if (this.isWalkable(upNode) && this.isStandable(landingNode)) {
+		if (
+			   this.isWalkable(this.origin)
+			&& this.isWalkable(upNode)
+			&& this.isStandable(landingNode)) {
 			neighbors.push(this.makeMovement(landingNode, Math.SQRT2 * 1.5))
 		}
 	}

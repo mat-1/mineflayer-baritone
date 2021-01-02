@@ -13,7 +13,7 @@ function inject (bot) {
 	bot.pathfinder.timeout = 1000
 	bot.pathfinder.straightLine = true
 	bot.pathfinder.complexPathOptions = {}
-	bot.pathfinder.debug = false
+	bot.pathfinder.debug = true
 
 
 	let targetEntity = null
@@ -140,7 +140,7 @@ function inject (bot) {
 		// if it's moving slowly and its touching a block, it should probably jump
 		const { x: velX, y: velY, z: velZ } = bot.entity.velocity
 		return (
-			bot.onGround
+			bot.entity.onGround
 			&& bot.entity.isCollidedHorizontally
 			&& Math.abs(velX) < 0.01
 			&& Math.abs(velZ) < 0.01
@@ -158,18 +158,20 @@ function inject (bot) {
 		const allowSkippingPath = straightPathOptions.skip
 		const centered = straightPathOptions.centered
 		if (!headLockedUntilGround) {
-			await bot.lookAt(target.offset(.5, 1.625, .5), true)
+			await bot.lookAt(target.offset(0, 1.625, 0), true)
 		}
 		if (!isPlayerOnBlock(bot.entity.position, target, bot.entity.onGround, centered) && !(allowSkippingPath && isPointOnPath(bot.entity.position))) {
+			let blockBelow = bot.world.getBlock(bot.entity.position.offset(0, -1, 0).floored())
 			let blockInside = bot.world.getBlock(bot.entity.position.offset(0, 0, 0).floored())
 			let blockInside2 = bot.world.getBlock(bot.entity.position.offset(0, 1, 0).floored())
 			if (
-				(blockInside && (blockInside.name === 'water' || blockInside2.name === 'water') && target.y >= bot.entity.position.y - .5)
+				(blockInside && (blockBelow.name === 'water' || blockInside.name === 'water' || blockInside2.name === 'water') && target.y >= bot.entity.position.y - .5)
 				|| (blockInside && blockInside2.name === 'ladder' && target.y >= bot.entity.position.y)
 			) {
 				// in water
 				bot.setControlState('sprint', false)
-				bot.setControlState('forward', false)
+				if (bot.entity.position.xzDistanceTo(target) < .5)
+					bot.setControlState('forward', false)
 				bot.setControlState('jump', true)
 			} else if (bot.entity.onGround && shouldAutoJump()) {
 				bot.setControlState('jump', true)
@@ -300,7 +302,7 @@ function inject (bot) {
 			calculating = false
 			goingToPathTarget = pathGoal.pos.clone()
 			complexPathPoints = [start, pathGoal.pos]
-			await straightPath({target: pathGoal.pos.offset(-.5, 0, -.5), skip: false, centered: options.centered})
+			await straightPath({target: pathGoal.pos, skip: false, centered: options.centered})
 		} else {
 			const timeout = bot.pathfinder.timeout
 
@@ -329,7 +331,7 @@ function inject (bot) {
 			if (bot.pathfinder.debug) {
 				console.log('RESULT:', result)
 				if (result.status === 'noPath') {
-					console.log('no path from', new Vec3(pathGoal.x, pathGoal.y, pathGoal.z), 'to', result.path[result.path.length - 1])
+					console.log('no path from', new Vec3(pathGoal.pos.x, pathGoal.pos.y, pathGoal.pos.z), 'to', result.path[result.path.length - 1])
 				}
 			}
 			if (currentCalculatedPathNumber > pathNumber) return
@@ -338,7 +340,7 @@ function inject (bot) {
 			complexPathPoints = result.path
 			while (complexPathPoints.length > 0) {
 				const movement = complexPathPoints[0]
-				await straightPath({target: movement})
+				await straightPath({target: movement.offset(.5, 0, .5)})
 				if (bot.pathfinder.debug)
 					console.log('now at', movement)
 				if (currentCalculatedPathNumber > pathNumber || complexPathPoints === null) return
