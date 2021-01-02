@@ -35,7 +35,8 @@ function AStar({ start, goal, neighbor, timeout, bot }) {
 
 			if (performance.now() - startTime > timeout) {
 				const path = reconstructPath(bestNode)
-				console.log('timeout iterationCount', iterationCount, path)
+				if (bot.pathfinder.debug)
+					console.log('timeout iterationCount', iterationCount, path)
 				return resolve({
 					status: 'timeout',
 					cost: bestNode.g,
@@ -47,7 +48,8 @@ function AStar({ start, goal, neighbor, timeout, bot }) {
 			openDataMap.delete(hash(node.data))
 			if (goal.isEnd(node.data)) {
 				// done
-				console.log('success iterationCount', iterationCount)
+				if (bot.pathfinder.debug)
+					console.log('success iterationCount', iterationCount)
 				return resolve({
 					status: 'success',
 					cost: node.g,
@@ -91,7 +93,8 @@ function AStar({ start, goal, neighbor, timeout, bot }) {
 				}
 			}
 		}
-		console.log('noPath iterationCount', iterationCount)
+		if (bot.pathfinder.debug)
+			console.log('noPath iterationCount', iterationCount)
 		return resolve({
 			status: 'noPath',
 			cost: bestNode.g,

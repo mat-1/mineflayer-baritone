@@ -297,7 +297,8 @@ function inject (bot) {
 
 		if (bot.pathfinder.straightLine && pathGoal.pos && tryStraightPath(pathGoal)) {
 			// just run straight toward the goal, useful when chasing people
-			console.log('straight pathing :)', pathGoal.pos)
+			if (bot.pathfinder.debug)
+				console.log('straight pathing :)', pathGoal.pos)
 			bot.lookAt(pathGoal.pos, true)
 			calculating = false
 			goingToPathTarget = pathGoal.pos.clone()
