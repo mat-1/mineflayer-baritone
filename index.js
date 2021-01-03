@@ -317,7 +317,8 @@ function inject (bot) {
 					neighbor: (node) => {
 						return movements.getNeighbors(bot.world, node)
 					},
-					timeout
+					timeout,
+					bot
 				})
 				let calculateEnd = performance.now()
 				// summedTimes += calculateEnd - calculateStart
