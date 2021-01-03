@@ -307,34 +307,26 @@ function inject (bot) {
 		} else {
 			const timeout = bot.pathfinder.timeout
 
-
-			// let summedTimes = 0
-			// for (let i = 0;i<100;i++) {
-				let calculateStart = performance.now()
-				const result = await AStar({
-					start,
-					goal: pathGoal,
-					neighbor: (node) => {
-						return movements.getNeighbors(bot.world, node)
-					},
-					timeout,
-					bot
-				})
-				let calculateEnd = performance.now()
-				// summedTimes += calculateEnd - calculateStart
-				if (bot.pathfinder.debug) {
-					console.log(calculateEnd - calculateStart)
-					if (calculateEnd - calculateStart > 900)
-						console.log(pathGoal.pos)
-					}
-			// }
-			// console.log(summedTimes/100, 'average')
-			// return
+			let calculateStart = performance.now()
+			const result = await AStar({
+				start,
+				goal: pathGoal,
+				neighbor: (node) => {
+					return movements.getNeighbors(bot.world, node)
+				},
+				timeout,
+				bot
+			})
+			let calculateEnd = performance.now()
+			if (bot.pathfinder.debug) {
+				console.log(calculateEnd - calculateStart)
+				if (calculateEnd - calculateStart > 900)
+					console.log(pathGoal.pos)
+			}
 			if (bot.pathfinder.debug) {
 				console.log('RESULT:', result)
-				if (result.status === 'noPath') {
+				if (result.status === 'noPath')
 					console.log('no path from', new Vec3(pathGoal.pos.x, pathGoal.pos.y, pathGoal.pos.z), 'to', result.path[result.path.length - 1])
-				}
 			}
 			if (currentCalculatedPathNumber > pathNumber) return
 			else currentCalculatedPathNumber = pathNumber
