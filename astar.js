@@ -23,15 +23,18 @@ function AStar({ start, goal, neighbor, timeout, bot }) {
 	var startTime = performance.now()
 
 	return new Promise(async(resolve) => {
-		let lastSleep = performance.now()
 		let iterationCount = 0
-		while (!openHeap.isEmpty()) {
-			iterationCount ++
-			if (performance.now() - lastSleep >= 50) {
-				// need to do this so the bot doesnt lag
-				await new Promise(r => setTimeout(r, 0))
-				lastSleep = performance.now()
+		const processHeap = async() => {
+			if (openHeap.isEmpty()) {
+				if (bot.pathfinder.debug)
+					console.log('noPath iterationCount', iterationCount)
+				return resolve({
+					status: 'noPath',
+					cost: bestNode.g,
+					path: reconstructPath(bestNode)
+				})
 			}
+			iterationCount ++
 
 			if (performance.now() - startTime > timeout) {
 				const path = reconstructPath(bestNode)
@@ -92,14 +95,9 @@ function AStar({ start, goal, neighbor, timeout, bot }) {
 					openHeap.push(neighborNode)
 				}
 			}
+			setImmediate(processHeap)
 		}
-		if (bot.pathfinder.debug)
-			console.log('noPath iterationCount', iterationCount)
-		return resolve({
-			status: 'noPath',
-			cost: bestNode.g,
-			path: reconstructPath(bestNode)
-		})
+		setImmediate(processHeap)
 	})
 
 }
