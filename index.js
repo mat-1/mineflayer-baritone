@@ -55,6 +55,7 @@ function inject (bot) {
 		// uses A* to find a path and combines straight paths to get to the goal
 		if(!(pathGoal instanceof goals.Goal))
 			pathGoal = new goals.GoalBlock(pathGoal.x, pathGoal.y, pathGoal.z)
+		if (bot.pathfinder.complexPathOptions) bot.pathfinder.stop()
 
 		let pathNumber
 
@@ -177,6 +178,8 @@ function inject (bot) {
 		targetEntity = null
 		complexPathPoints = null
 		straightPathOptions = null
+		if (bot.pathfinder.executor)
+			bot.pathfinder.executor.stop()
 		bot.clearControlStates()
 	}
 

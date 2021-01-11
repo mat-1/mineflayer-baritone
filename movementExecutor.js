@@ -1,3 +1,4 @@
+const BinaryHeapOpenSet = require('./heap')
 const { canSprintJump, canWalkJump, isPointOnPath } = require('./physics')
 const { isPlayerOnBlock } = require('./utils')
 
@@ -13,6 +14,9 @@ function executeMove({ bot, target, skip, centered, isEnd, complexPathPoints }) 
 			const listener = () => executeMoveTick(executeOptions, moveVariables)
 			executeOptions.listener = listener
 			bot.on('physicTick', listener)
+			bot.pathfinder.executor = {
+				stop: () => bot.removeListener('physicTick', listener)
+			}
 		} else {
 			// if there's no options, just resolve instantly
 			resolve()
