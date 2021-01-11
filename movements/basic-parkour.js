@@ -113,8 +113,7 @@ class MoveForwardDownParkour1 extends Move {
 		let landingNode = this.forward(2).down(1)
 		let spaceNode1 = this.forward(1).down(1)
 		if (
-			   this.isWalkable(spaceNode1)
-			&& !this.isJumpable(spaceNode1)
+			   this.isJumpable(spaceNode1)
 			&& this.isStandable(landingNode)
 		) {
 			neighbors.push(this.makeMovement(landingNode, 1))

@@ -28,7 +28,7 @@ class BinaryHeapOpenSet {
 	  }
 	}
   
-	update (val) {
+	update(val) {
 	  let current = this.heap.indexOf(val)
 	  let parent = current >>> 1
   
@@ -40,7 +40,7 @@ class BinaryHeapOpenSet {
 	  }
 	}
   
-	pop () {
+	pop() {
 	  // Smallest element is at the index 1 in the heap array
 	  const smallest = this.heap[1]
   

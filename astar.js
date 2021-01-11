@@ -1,5 +1,6 @@
 const Heap = require('./heap')
 const { performance } = require('perf_hooks')
+const { Vec3 } = require('vec3')
 
 module.exports = AStar
 
@@ -49,7 +50,7 @@ function AStar({ start, goal, neighbor, timeout, bot }) {
 
 			const node = openHeap.pop()
 			openDataMap.delete(hash(node.data))
-			if (goal.isEnd(node.data)) {
+			if (goal.isEnd(new Vec3(node.data.x + .5, node.data.y, node.data.z + .5))) {
 				// done
 				if (bot.pathfinder.debug)
 					console.log('success iterationCount', iterationCount)

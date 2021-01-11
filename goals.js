@@ -26,11 +26,12 @@ class GoalXYZ extends Goal {
 	}
 	
 	heuristic(node) {
-		return node.offset(.5, 0, .5).distanceTo(this.pos)
+		// y distance is doubled so it prefers going up
+		return node.offset(.5, 0, .5).xzDistanceTo(this.pos) + Math.abs(node.y - this.pos.y) * 2
 	}
 	
 	isEnd(node) {
-		return isPlayerOnBlock(node, this.pos, true)
+		return isPlayerOnBlock(node, this.pos, true, false)
 	}
 
 	equals(node) {
@@ -49,7 +50,7 @@ class GoalBlock extends GoalXYZ {
 }
 
 
-class GoalReach extends Goal {
+class GoalReach extends GoalXYZ {
 	constructor(x, y, z) {
 		super()
 		if (x && !y && !z)
@@ -58,16 +59,8 @@ class GoalReach extends Goal {
 			this.pos = new Vec3(x + .5, y, z + .5)
 	}
 	
-	heuristic(node) {
-		return node.distanceTo(this.pos)
-	}
-	
 	isEnd(node) {
 		return canReach(node, this.pos.offset(0, 1.625, 0), 3)
-	}
-
-	equals(node) {
-		return node.equals(this.pos)
 	}
 }
 
