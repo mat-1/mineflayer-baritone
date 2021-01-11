@@ -2,7 +2,7 @@ const { canSprintJump, canWalkJump, isPointOnPath } = require('./physics')
 const { isPlayerOnBlock } = require('./utils')
 
 function executeMove({ bot, target, skip, centered, isEnd, complexPathPoints }) {
-	const executeOptions = { bot, target, skip: skip ?? true, centered: centered ?? false, isEnd }
+	const executeOptions = { bot, target, skip: skip ?? true, centered: centered ?? false, isEnd, complexPathPoints }
 	return new Promise((resolve, reject) => {
 		if (executeOptions) {
 			executeOptions.resolve = resolve
@@ -29,7 +29,7 @@ async function executeMoveTick({ bot, target, skip: allowSkippingPath, centered,
 
 	const defaultIsEnd = ((position, onGround) => {
 		return isPlayerOnBlock(position, target, onGround, true)
-		|| (allowSkippingPath && isPointOnPath(position, { complexPathPoints }))
+		|| (allowSkippingPath && isPointOnPath(position, { complexPathPoints, bot }))
 	})
 	// if (!isEnd) isEnd = defaultIsEnd
 	isEnd = defaultIsEnd
@@ -52,12 +52,12 @@ async function executeMoveTick({ bot, target, skip: allowSkippingPath, centered,
 			if (bot.entity.position.xzDistanceTo(target) < .5)
 				bot.setControlState('forward', false)
 			bot.setControlState('jump', true)
-		} else if (bot.entity.onGround && canSprintJump(bot, isEnd)) {
+		} else if (bot.entity.onGround && canSprintJump(bot, { isEnd, complexPathPoints })) {
 			moveVariables.headLockedUntilGround = true
 			bot.setControlState('jump', true)
 			if (bot.pathfinder.debug)
 				console.log('sprint jump!')
-		} else if (bot.entity.onGround && canWalkJump(bot, isEnd)) {
+		} else if (bot.entity.onGround && canWalkJump(bot, { isEnd, complexPathPoints })) {
 			bot.setControlState('sprint', false)
 			moveVariables.headLockedUntilGround = true
 			moveVariables.walkingUntilGround = true

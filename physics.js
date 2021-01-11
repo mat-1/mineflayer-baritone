@@ -41,7 +41,7 @@ function simulateUntil(bot, func, ticks=1, controlstate={}, returnState=false, r
 	return returnState ? state : false
 }
 
-function canSprintJump(bot, isEnd) {
+function canSprintJump(bot, { isEnd, complexPathPoints }) {
 	// Checks if the bot should sprint jump. This is also used for parkour
 	const returnState = simulateUntil(bot, state => state.onGround, 40, {jump: true, sprint: true, forward: true}, true, false)
 	if (!returnState) {
@@ -53,21 +53,21 @@ function canSprintJump(bot, isEnd) {
 	let fallDistance = bot.entity.position.y - returnState.pos.y
 	if (jumpDistance <= .5 || fallDistance > 2.5) return false
 	
-	const isOnPath = (isEnd || isPointOnPath)(returnState.pos, { onGround: true })
+	const isOnPath = (isEnd || isPointOnPath)(returnState.pos, { bot, onGround: true })
 	if (bot.pathfinder.debug)
 		console.log('isOnPath', isOnPath, returnState.pos, isEnd)
 	if (!isOnPath) return false
 	return true
 }
 
-function canWalkJump(bot) {
+function canWalkJump(bot, { complexPathPoints }) {
 	// checks if the bot should walk jump. sprint jumps are used most of the time, but in case a sprint jump is too much itll do this instead
 	const isStateGood = (state) => {
 		if (!state) return false
 		const jumpDistance = bot.entity.position.distanceTo(state.pos)
 		let fallDistance = bot.entity.position.y - state.pos.y
 		if (jumpDistance <= 1 || fallDistance > 2) return false
-		const isOnPath = isPointOnPath(state.pos, { max: 10 })
+		const isOnPath = isPointOnPath(state.pos, { bot, max: 10, complexPathPoints })
 		if (!isOnPath) return false
 		return true
 	}
@@ -91,7 +91,7 @@ function willBeOnGround(bot, ticks=1) {
 }	
 
 
-function isPointOnPath(point, { max=null, onGround=false, complexPathPoints }) {
+function isPointOnPath(point, { bot, max=null, onGround=false, complexPathPoints }) {
 	// returns true if a point is on the current path
 	if (!complexPathPoints)
 		return false
