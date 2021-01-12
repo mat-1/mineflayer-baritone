@@ -33,9 +33,9 @@ function inject (bot) {
 		if (!entity.onGround) return
 		if (!bot.entity.onGround) return
 
-		const distance = bot.entity.position.distanceTo(entity.position)
-		if (bot.pathfinder.complexPathOptions.maxDistance && distance > bot.pathfinder.complexPathOptions.maxDistance) {}
-		else if (bot.pathfinder.complexPathOptions.minDistance && distance < bot.pathfinder.complexPathOptions.minDistance) {}
+		const distanceToTarget = bot.entity.position.distanceTo(entity.position)
+		if (bot.pathfinder.complexPathOptions.maxDistance && distanceToTarget > bot.pathfinder.complexPathOptions.maxDistance);
+		else if (bot.pathfinder.complexPathOptions.minDistance && distanceToTarget < bot.pathfinder.complexPathOptions.minDistance);
 		else if (bot.pathfinder.complexPathOptions.maxDistance || bot.pathfinder.complexPathOptions.minDistance) return
 
 		let entityMoved = complexPathGoal === null || !entity.position.equals(complexPathGoal)
@@ -55,15 +55,23 @@ function inject (bot) {
 		// uses A* to find a path and combines straight paths to get to the goal
 		if(!(pathGoal instanceof goals.Goal))
 			pathGoal = new goals.GoalBlock(pathGoal.x, pathGoal.y, pathGoal.z)
-		if (bot.pathfinder.complexPathOptions) bot.pathfinder.stop()
-
 		let pathNumber
 
 		if (options.incPath === false)
 			pathNumber = currentPathNumber
 		else
 			pathNumber = ++currentPathNumber
+
+		if (bot.pathfinder.debug) console.log('waiting for move to finish')
+		await bot.pathfinder.finishMovement(pathGoal)
+		if (pathGoal.pos)
+			await bot.lookAt(pathGoal.pos, true)
+		if (bot.pathfinder.debug) console.log('waiting for move to finish [DONE]')
+
+		if (currentCalculatedPathNumber > pathNumber) return
+
 		bot.pathfinder.complexPathOptions = options
+
 		complexPathGoal = pathGoal
 		calculating = true
 		continuousPath = true
@@ -89,6 +97,7 @@ function inject (bot) {
 			const timeout = bot.pathfinder.timeout
 
 			let calculateStart = performance.now()
+			if (bot.pathfinder.debug) console.log('started calculating...')
 			const result = await AStar({
 				start,
 				goal: pathGoal,
@@ -116,11 +125,15 @@ function inject (bot) {
 					bot,
 					target: complexPathPoints.length == 1 && pathGoal.pos ? pathGoal.pos : movement.offset(.5, 0, .5),
 					isEnd: complexPathPoints.length == 1 ? (position, onGround) => onGround && pathGoal.isEnd(position) : null,
-					complexPathPoints
+					complexPathPoints,
+					stopCondition: () => currentCalculatedPathNumber > pathNumber
 				})
 				if (bot.pathfinder.debug)
 					console.log('now at', movement)
-				if (currentCalculatedPathNumber > pathNumber || complexPathPoints === null) return
+				if (currentCalculatedPathNumber > pathNumber || complexPathPoints === null) {
+					if (bot.pathfinder.debug) console.log('looks like another path replaced this one!')
+					return
+				}
 				complexPathPoints.shift()
 			}
 			if (result.status === 'timeout' && pathNumber === currentPathNumber) {
@@ -135,13 +148,14 @@ function inject (bot) {
 				if (options.centered) {
 					if (bot.pathfinder.debug)
 						console.log('pathGoal.pos', pathGoal.pos)
-					await executeMove({
-						bot,
-						target: pathGoal.pos,
-						skip: false,
-						centered: true,
-						complexPathPoints
-				})
+					if (result.status === 'sucess')
+						await executeMove({
+							bot,
+							target: pathGoal.pos,
+							skip: false,
+							centered: true,
+							complexPathPoints
+					})
 				}
 			}
 		}
@@ -174,12 +188,26 @@ function inject (bot) {
 		await follow(entity, options)
 	}
 
-	bot.pathfinder.stop = () => {
+	bot.pathfinder.finishMovement = () => {
+		return new Promise(async(resolve, reject) => {
+			if (bot.pathfinder.executor)
+				await bot.pathfinder.executor.wait()
+			let checkGroundTick = () => {
+				if (bot.entity.onGround) {
+					bot.clearControlStates()
+					bot.removeListener('physicTick', checkGroundTick)
+					resolve()
+				}
+			}
+			bot.on('physicTick', checkGroundTick)
+		})
+}
+
+	bot.pathfinder.stop = async() => {
 		targetEntity = null
 		complexPathPoints = null
 		straightPathOptions = null
-		if (bot.pathfinder.executor)
-			bot.pathfinder.executor.stop()
+		await bot.pathfinder.finishMovement()
 		bot.clearControlStates()
 	}
 

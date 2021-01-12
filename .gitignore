@@ -1,4 +1,4 @@
 bot.js
 node_modules
 *.code-workspace
-.vscode/tasks.json
+.vscode

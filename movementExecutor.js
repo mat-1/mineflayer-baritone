@@ -1,21 +1,41 @@
 const BinaryHeapOpenSet = require('./heap')
 const { canSprintJump, canWalkJump, isPointOnPath } = require('./physics')
 const { isPlayerOnBlock } = require('./utils')
+const { performance } = require('perf_hooks')
 
-function executeMove({ bot, target, skip, centered, isEnd, complexPathPoints }) {
-	const executeOptions = { bot, target, skip: skip ?? true, centered: centered ?? false, isEnd, complexPathPoints }
+function executeMove({ bot, target, skip, centered, isEnd, complexPathPoints, stopCondition, timeout=5000 }) {
+	const executeOptions = {
+		bot,
+		target,
+		skip: skip ?? true,
+		centered: centered ?? false,
+		isEnd, 
+		complexPathPoints,
+		endTime: performance.now() + timeout,
+		stopCondition
+	}
 	return new Promise((resolve, reject) => {
 		if (executeOptions) {
-			executeOptions.resolve = resolve
-
+			
 			// create an event listener for every physic tick (every 50ms)
 			// we're making an anonymous function here so it can pass the arguments to the function
 			let moveVariables = {}
+
+			// this is a list so it can add onto the things it will resolve
+			moveVariables.resolves = [resolve, async () => {
+				bot.pathfinder.executor = null
+			}]
+
 			const listener = () => executeMoveTick(executeOptions, moveVariables)
 			executeOptions.listener = listener
 			bot.on('physicTick', listener)
 			bot.pathfinder.executor = {
-				stop: () => bot.removeListener('physicTick', listener)
+				stop: () => bot.removeListener('physicTick', listener),
+				wait: () => {
+					return new Promise((waitResolve, waitReject) => {
+						moveVariables.resolves.push(waitResolve)
+					})
+				},
 			}
 		} else {
 			// if there's no options, just resolve instantly
@@ -24,7 +44,7 @@ function executeMove({ bot, target, skip, centered, isEnd, complexPathPoints }) 
 	})
 }
 
-async function executeMoveTick({ bot, target, skip: allowSkippingPath, centered, isEnd, listener, resolve, complexPathPoints }, moveVariables) {
+async function executeMoveTick({ bot, target, skip: allowSkippingPath, centered, isEnd, listener, complexPathPoints, endTime, stopCondition }, moveVariables) {
 	// do one tick of pathing towards a specific target
 	// telling the bot how exactly to move is here
 	// generally this will just be a straight line, but if you want to add stuff like neos thats gonna be a lot more complex
@@ -43,7 +63,13 @@ async function executeMoveTick({ bot, target, skip: allowSkippingPath, centered,
 		// the 1.625 is the position of the bot's eyes, so it looks directly at the target
 		await bot.lookAt(target.offset(0, 1.625, 0), true)
 
-	if (!isEnd(bot.entity.position, bot.entity.onGround)) {
+	const shouldContinue = (
+		!isEnd(bot.entity.position, bot.entity.onGround)
+		&& performance.now() < endTime
+		&& !(stopCondition && stopCondition())
+	)
+
+	if (shouldContinue) {
 		let blockBelow = bot.world.getBlock(bot.entity.position.offset(0, -1, 0).floored())
 		let blockInside = bot.world.getBlock(bot.entity.position.offset(0, 0, 0).floored())
 		let blockInside2 = bot.world.getBlock(bot.entity.position.offset(0, 1, 0).floored())
@@ -78,7 +104,8 @@ async function executeMoveTick({ bot, target, skip: allowSkippingPath, centered,
 	} else {
 		// arrived at path ending :)
 		bot.setControlState('jump', false)
-		resolve()
+		for (const resolve of moveVariables.resolves)
+			resolve()
 		moveVariables.headLockedUntilGround = false
 		moveVariables.walkingUntilGround = false
 		bot.removeListener('physicTick', listener)
