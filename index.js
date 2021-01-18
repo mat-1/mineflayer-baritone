@@ -4,6 +4,7 @@ const { Vec3 } = require('vec3')
 const { performance } = require('perf_hooks')
 const goals = require('./goals')
 const { executeMove } = require('./movementExecutor')
+const { tryStraightPath, simulateUntil, getControlState } = require('./physics')
 
 function inject (bot) {
 	bot.pathfinder = {}
@@ -64,18 +65,21 @@ function inject (bot) {
 
 		if (bot.pathfinder.debug) console.log('waiting for move to finish')
 		await bot.pathfinder.finishMovement(pathGoal)
-		if (pathGoal.pos)
-			await bot.lookAt(pathGoal.pos, true)
 		if (bot.pathfinder.debug) console.log('waiting for move to finish [DONE]')
 
 		if (currentCalculatedPathNumber > pathNumber) return
+		// if (pathGoal.pos)
+		// 	await bot.lookAt(pathGoal.pos, true)
 
 		bot.pathfinder.complexPathOptions = options
 
 		complexPathGoal = pathGoal
 		calculating = true
 		continuousPath = true
-		const start = bot.entity.position.floored()
+		
+		// simulate falling for a second then set the start position there
+		const start = simulateUntil(bot, (state) => state.onGround, 20, getControlState(bot), true, true).pos.floored()
+		console.log('predicted start position:', start, '(from', bot.entity.position, ')')
 
 		if (false && bot.pathfinder.straightLine && pathGoal.pos && tryStraightPath(pathGoal)) {
 			// just run straight toward the goal, useful when chasing people
@@ -165,7 +169,7 @@ function inject (bot) {
 
 
 	bot.pathfinder.goto = async (position, options={}) => {
-		bot.clearControlStates()
+		// bot.clearControlStates()
 		if (options.straight)
 			await executeMove({
 				bot,
@@ -178,7 +182,7 @@ function inject (bot) {
 			await complexPath(position, options)
 	}
 
-	bot.pathfinder.follow = async (entity, options={}) => {
+	bot.pathfinder.follow = async (entity, options={maxDistance: 4}) => {
 		/*
 		Options:
 		- maxDistance
@@ -192,9 +196,11 @@ function inject (bot) {
 		return new Promise(async(resolve, reject) => {
 			if (bot.pathfinder.executor)
 				await bot.pathfinder.executor.wait()
+			else
+				return resolve()
 			let checkGroundTick = () => {
 				if (bot.entity.onGround) {
-					bot.clearControlStates()
+					// bot.clearControlStates()
 					bot.removeListener('physicTick', checkGroundTick)
 					resolve()
 				}

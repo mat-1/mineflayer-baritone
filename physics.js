@@ -51,7 +51,8 @@ function canSprintJump(bot, { isEnd, complexPathPoints }) {
 	
 	const jumpDistance = bot.entity.position.distanceTo(returnState.pos)
 	let fallDistance = bot.entity.position.y - returnState.pos.y
-	if (jumpDistance <= .5 || fallDistance > 2.5) return false
+	// We're checking that the bot will not fall more than 2 blocks, because since it's jumping it would take fall damage
+	if (jumpDistance <= .5 || fallDistance >= 2) return false
 	
 	const isOnPath = (isEnd || isPointOnPath)(returnState.pos, { bot, onGround: true })
 	if (bot.pathfinder.debug)
@@ -146,4 +147,4 @@ function convertPointToDirection(point) {
 }
 
 
-module.exports = { canSprintJump, canWalkJump, isPointOnPath }
+module.exports = { canSprintJump, canWalkJump, isPointOnPath, tryStraightPath, simulateUntil, getControlState }

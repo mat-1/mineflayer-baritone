@@ -41,13 +41,15 @@ class MoveForwardDown extends Move {
 	addNeighbors(neighbors) {
 		let forwardNode = this.forward(1)
 		let landingNode = forwardNode.up(1)
+		let fallDistance = 0
 		for (let i = 0; i <= 3; i++) {
+			fallDistance ++
 			landingNode = landingNode.down(1)
 			if (this.isStandable(landingNode)) break
 		}
 
 		if (this.isStandable(landingNode) && this.isWalkable(forwardNode))
-			neighbors.push(this.makeMovement(landingNode, 4))
+			neighbors.push(this.makeMovement(landingNode, 3 + fallDistance))
 	}
 }
 
@@ -73,13 +75,15 @@ class MoveDiagonalDown extends Move {
 	addNeighbors(neighbors) {
 		let forwardNode = this.forward(1)
 		let landingNode = this.right(1, forwardNode)
+		let fallDistance = 0
 		for (let i = 0; i < 3; i++) {
+			fallDistance ++
 			landingNode = this.down(1, landingNode)
 			if (this.isStandable(landingNode)) break
 		}
 
 		if (this.isStandable(landingNode) && this.isWalkable(forwardNode))
-			neighbors.push(this.makeMovement(landingNode, Math.SQRT2 * 1.5))
+			neighbors.push(this.makeMovement(landingNode, Math.SQRT2 * 1.5 + fallDistance * 2))
 	}
 }
 
