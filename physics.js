@@ -109,7 +109,7 @@ function isPointOnPath(point, { bot, max=null, onGround=false, complexPathPoints
 		}
 
 		let calculatedDistance = distanceFromLine(segmentStart, segmentEnd, point.offset(-.5, 0, -.5))
-		if (calculatedDistance < .5 && (bot.entity.onGround || willBeOnGround(bot))) {
+		if (calculatedDistance < .8 && (bot.entity.onGround || willBeOnGround(bot))) {
 			return true
 		}
 	}
