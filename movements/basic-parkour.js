@@ -99,6 +99,7 @@ class MoveForwardUpParkour3 extends Move {
 		let spaceNode3 = this.forward(3).up(1)
 		if (
 			   this.isJumpable(spaceNode1)
+			&& this.isAir(spaceNode1.down(1))
 			&& this.isJumpable(spaceNode2)
 			&& this.isJumpable(spaceNode3)
 			&& this.isStandable(landingNode)
