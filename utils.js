@@ -1,4 +1,4 @@
-const { RaycastIterator } = require('mineflayer/lib/iterators')
+const { RaycastIterator } = require('prismarine-world').iterators
 
 function isPlayerOnBlock(playerPosition, blockPosition, onGround=false, overhang=true) {
 	// returns true if you can stand on the block
