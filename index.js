@@ -79,7 +79,7 @@ function inject (bot) {
 		
 		// simulate falling for a second then set the start position there
 		const start = simulateUntil(bot, (state) => state.onGround, 20, getControlState(bot), true, true).pos.floored()
-		console.log('predicted start position:', start, '(from', bot.entity.position, ')')
+		console.log('predicted start position:', start, '(from', bot.entity.position, bot.entity.velocity, ')')
 
 		if (false && bot.pathfinder.straightLine && pathGoal.pos && tryStraightPath(pathGoal)) {
 			// just run straight toward the goal, useful when chasing people

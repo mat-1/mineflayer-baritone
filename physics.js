@@ -1,6 +1,7 @@
 const { PlayerState } = require('prismarine-physics')
 const { distanceFromLine } = require('./pointtoline')
 const { isPlayerOnBlock } = require('./utils')
+const { Vec3 } = require('vec3')
 
 function getControlState(bot) {
 	// we have to do this instead of just returning the control state since it uses custom get() methods
@@ -61,30 +62,37 @@ function canSprintJump(bot, { isEnd, complexPathPoints }) {
 	return true
 }
 
+// checks if the bot should walk jump. sprint jumps are used most of the time, but in case a sprint jump is too much itll do this instead
 function canWalkJump(bot, { complexPathPoints }) {
-	// checks if the bot should walk jump. sprint jumps are used most of the time, but in case a sprint jump is too much itll do this instead
 	const isStateGood = (state) => {
 		if (!state) return false
 		const jumpDistance = bot.entity.position.distanceTo(state.pos)
 		let fallDistance = bot.entity.position.y - state.pos.y
 		if (jumpDistance <= 1 || fallDistance > 2) return false
-		const isOnPath = isPointOnPath(state.pos, { bot, max: 10, complexPathPoints })
+		const isOnPath = isPointOnPath(state.pos, { bot, max: 10, complexPathPoints, onGround: true })
 		if (!isOnPath) return false
 		return true
 	}
 	
+	// const returnState = simulateUntil(bot, state => state.onGround, 20, {jump: true, sprint: false, forward: true}, true, false)
 	const returnState = simulateUntil(bot, state => state.onGround, 20, {jump: true, sprint: false, forward: true}, true, false)
 	const returnStateWithoutJump = simulateUntil(bot, isStateGood, 20, {jump: false, sprint: true, forward: true}, true, false)
 	if (!returnState) return false // never landed on ground
 	
-	if (!isStateGood(returnState)) return false
+	if (!isStateGood(returnState)) {
+		console.log('cant walk jump', returnState.pos)
+		return false
+	}
 	
 	// if it can do just as good just from sprinting, then theres no point in jumping
-	if (isStateGood(returnStateWithoutJump)) return false
-	
+	if (isStateGood(returnStateWithoutJump)) {
+		console.log('could walk jump')
+		return false
+	}
+
+	console.log('*** walk jump')
 	return true
 }
-
 
 
 function willBeOnGround(bot, ticks=1) {
@@ -131,20 +139,27 @@ function tryStraightPath(bot, goal) {
 	}
 	
 	// try sprint jumping towards the player for 10 seconds
-	const returnState = simulateUntil(bot, shouldStop, 200, {jump: false, sprint: true, forward: true}, true, false, convertPointToDirection(goal.pos))
+	const returnState = simulateUntil(bot, shouldStop, 200, {jump: false, sprint: true, forward: true}, true, false, convertPointToDirection(bot, goal.pos))
 	if (!isStateGood(returnState)) return false
 	return true
 }
 
-function convertPointToDirection(point) {
-	const delta = point.minus(bot.entity.position.offset(0, bot.entity.height, 0))
+function convertPointToDirection(bot, point) {
+	// make the point a vec3
+	const pointVec3 = new Vec3(point.x, point.y, point.z)
+
+	const delta = pointVec3.minus(bot.entity.position.offset(0, bot.entity.height, 0))
 	const yaw = Math.atan2(-delta.x, -delta.z)
 	const groundDistance = Math.sqrt(delta.x * delta.x + delta.z * delta.z)
 	const pitch = Math.atan2(delta.y, groundDistance)
 	return {
-		pitch, yaw
+		pitch,
+		yaw
 	}
 }
 
 
-module.exports = { canSprintJump, canWalkJump, isPointOnPath, tryStraightPath, simulateUntil, getControlState }
+module.exports = {
+	canSprintJump, canWalkJump, isPointOnPath, tryStraightPath, simulateUntil, getControlState, willBeOnGround,
+	convertPointToDirection
+}

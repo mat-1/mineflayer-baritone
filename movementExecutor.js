@@ -1,4 +1,3 @@
-const BinaryHeapOpenSet = require('./heap')
 const { canSprintJump, canWalkJump, isPointOnPath } = require('./physics')
 const { isPlayerOnBlock } = require('./utils')
 const { performance } = require('perf_hooks')
@@ -19,6 +18,8 @@ function executeMove({ bot, target, skip, centered, isEnd, complexPathPoints, st
 			
 			// create an event listener for every physic tick (every 50ms)
 			// we're making an anonymous function here so it can pass the arguments to the function
+			console.log(bot.entity.onGround)
+			// let moveVariables = {headLockedUntilGround: !(bot.entity.onGround || willBeOnGround(bot, 2))}
 			let moveVariables = {}
 
 			// this is a list so it can add onto the things it will resolve

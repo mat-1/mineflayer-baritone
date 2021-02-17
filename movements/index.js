@@ -82,19 +82,19 @@ class Move {
 	}
 
 	isAir(node) {
-		const block = this.world.getBlock(node)
+		const block = this.getBlock(node)
 		if (!block) return false
 		return (block.boundingBox === 'empty' && block.name !== 'water') || block.name === 'ladder'
 	}
 
 	isWater(node) {
-		const block = this.world.getBlock(node)
+		const block = this.getBlock(node)
 		if (!block) return false
 		return block.name === 'water'
 	}
 
 	isLadder(node) {
-		const block = this.world.getBlock(node)
+		const block = this.getBlock(node)
 		if (!block) return false
 		return block.name === 'ladder'
 	}
@@ -110,8 +110,7 @@ class Move {
 	}
 	
 	getBlock(node) {
-		const block = this.world.getBlock(node)
-		return block
+		return this.world.getBlock(node)
 	}
 	
 	isSolid(node) {
